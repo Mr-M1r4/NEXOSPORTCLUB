@@ -75,18 +75,18 @@ export default function App(){
   location.reload()
  }
 
- if(loading)return <div className="splash"><div><img src={base+'/logo.jpg'} className="brand brand-lg"/><p>Cargando RIVER Club OS…</p></div></div>
+ if(loading)return <div className="splash"><div><img src={base+'/logo.jpg'} className="brand brand-lg"/><p>Cargando NEXOSPORT CLUB…</p></div></div>
  if(!session)return <Login base={base}/>
 
  return <div className="app" style={{'--img-textura':'url('+base+'/textura.jpg)','--img-lineas':'url('+base+'/lineas.png)'} as any}>
   <aside>
-   <img className="brand" src={base+'/logo.jpg'} alt="RIVER"/>
+   <img className="brand" src={base+'/logo.jpg'} alt="NEXOSPORT CLUB"/>
    <small>CLUB OS · {role.toUpperCase()}</small>
    <nav>{nav.map((n:string)=><button key={n} className={tab===n?'active':''} onClick={()=>setTab(n)}>{labels[n]}</button>)}</nav>
    <div className="sidebottom"><span>{session.user.email}</span><button onClick={()=>supabase.auth.signOut()}>Cerrar sesión</button></div>
   </aside>
   <main className="main">
-   <header><div><small>{data.settings?.club_name||'RIVER VOLLEYBALL CLUB'}</small><h1>{labels[tab]}</h1></div><div className="actions"><ClubSwitcher onSwitched={load}/>{(role==='owner'||isPlatformAdmin)&&<button onClick={createClub}>+ Nuevo club</button>}
+   <header><div><small>{data.settings?.club_name||'NEXOSPORT CLUB'}</small><h1>{labels[tab]}</h1></div><div className="actions"><ClubSwitcher onSwitched={load}/>{(role==='owner'||isPlatformAdmin)&&<button onClick={createClub}>+ Nuevo club</button>}
     {tab==='athletes'&&canOperate&&<button onClick={()=>{setF({status:'active'});setModal('athlete')}}>+ Deportista</button>}
     {tab==='plans'&&canManage&&<button onClick={()=>{setF({name:'',duration_days:'30',price:'',active:true});setModal('plan')}}>+ Plan</button>}
     {tab==='memberships'&&canOperate&&<button onClick={()=>{setF({start_date:today(),registration_amount:0});setModal('register')}}>+ Inscripción</button>}
