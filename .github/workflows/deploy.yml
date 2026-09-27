@@ -1,4 +1,4 @@
-name: Deploy RIVER Club OS
+name: Deploy NEXOSPORT CLUB
 on:
   push:
     branches: [main]
@@ -19,30 +19,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-
       - name: Install dependencies
         run: npm install
-
       - name: Build static site
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://ewsygagytkicxdhykjfw.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_7lsAhSgheKjMpsBPGPYZKA_jzXrAASH
-
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: ./out
-
   deploy:
     environment:
       name: github-pages
