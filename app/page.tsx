@@ -229,6 +229,7 @@ function PlatformBilling({data,load}:any){
  const [payment,setPayment]=useState<Row|null>(null)
  const [saving,setSaving]=useState(false)
  const [msg,setMsg]=useState('')
+ const [receipt,setReceipt]=useState<Row|null>(null)
  const clubs=data.clubs||[]
  const subs=data.saasSubscriptions||[]
  const payments=data.saasPayments||[]
@@ -304,7 +305,8 @@ function PlatformBilling({data,load}:any){
    <label>Notas<textarea value={payment.notes||''} onChange={e=>setPayment({...payment,notes:e.target.value})}/></label>
    <button disabled={saving} onClick={recordPayment}>{saving?'Registrando…':'Registrar pago'}</button>
   </div></Modal>}
-  <section><h2>Historial de pagos del software</h2><Table head={['Fecha','Club','Periodo','Valor','Método','Referencia']} rows={payments.map((p:Row)=>[p.paid_at?.slice(0,10),clubs.find((c:Row)=>c.id===p.club_id)?.name||'—',p.subscription_period_start+' → '+p.subscription_period_end,money(p.amount),p.method||'—',p.reference||'—'])}/></section>
+  <section><h2>Historial de pagos del software</h2><Table head={['Fecha','Club','Periodo','Valor','Método','Referencia','Comprobante']} rows={payments.map((p:Row)=>[p.paid_at?.slice(0,10),clubs.find((c:Row)=>c.id===p.club_id)?.name||'—',p.subscription_period_start+' → '+p.subscription_period_end,money(p.amount),p.method||'—',p.reference||'—',<button onClick={()=>setReceipt({record:p,party:clubs.find((c:Row)=>c.id===p.club_id)?.name,concept:'Suscripción SaaS NEXOSPORT CLUB',period:p.subscription_period_start+' → '+p.subscription_period_end,club:'NEXOSPORT CLUB'})}>Recibo</button>])}/></section>
+  {receipt&&<Receipt {...receipt} onClose={()=>setReceipt(null)}/>} 
  </section>
 }
 
