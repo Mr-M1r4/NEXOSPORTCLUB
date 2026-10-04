@@ -24,16 +24,19 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 
 textarea{min-height:90px;resize:vertical}
 a{color:var(--gold);text-decoration:none}
 .app{display:grid;grid-template-columns:250px 1fr;min-height:100vh;background:var(--navy) var(--img-textura,none) center/cover;background-blend-mode:soft-light}
-aside{padding:26px 18px;border-right:1px solid var(--line);background:#000019EE;backdrop-filter:blur(8px);display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;height:100vh}
-.brand{width:155px;display:block;border-radius:12px;border:1px solid #FCAA0540;box-shadow:0 12px 40px #0008}
+aside{padding:26px 18px;border-right:1px solid var(--line);background:#000019EE;backdrop-filter:blur(8px);display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;height:100vh;overflow:hidden}
+.brand{width:155px;display:block;border-radius:12px;border:1px solid #FCAA0540;box-shadow:0 12px 40px #0008;flex:0 0 auto}
 .brand-lg{width:250px;margin:0 auto 14px}
-aside>small{color:var(--muted-2);letter-spacing:.12em;font-size:10px;margin-bottom:18px}
-nav{display:grid;gap:7px}
-nav button{text-align:left}
+aside>small{color:var(--muted-2);letter-spacing:.12em;font-size:10px;margin-bottom:18px;flex:0 0 auto}
+nav{display:grid;gap:7px;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2px 3px 8px 0;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+nav::-webkit-scrollbar{width:6px}
+nav::-webkit-scrollbar-track{background:transparent}
+nav::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}
+nav button{text-align:left;min-height:42px}
 nav button.active{border-color:var(--red);background:#F7032118;color:var(--white);box-shadow:inset 3px 0 0 var(--red)}
-.sidebottom{margin-top:auto;display:grid;gap:8px}
-.sidebottom span{font-size:11px;color:var(--muted-2);overflow:hidden;text-overflow:ellipsis}
-.main{padding:32px 40px;max-width:1500px;width:100%;margin:auto}
+.sidebottom{margin-top:auto;display:grid;gap:8px;padding-top:12px;flex:0 0 auto;background:#000019EE}
+.sidebottom span{font-size:11px;color:var(--muted-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.main{padding:32px 40px;max-width:1500px;width:100%;margin:auto;min-width:0}
 header{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:28px}
 header h1{margin:4px 0 0;font-size:34px;letter-spacing:-.03em}
 header small{color:var(--muted-2);letter-spacing:.12em}
@@ -98,9 +101,9 @@ tr:hover td{background:#FCAA0508}
 button[title*="Eliminar"],button[title*="eliminar"]{border-color:#F7032166}
 @media(max-width:1000px){
  .app{grid-template-columns:1fr}
- aside{position:relative;height:auto;min-height:0;display:block}
+ aside{position:relative;height:auto;min-height:0;display:block;overflow:visible}
  aside .brand{width:120px}
- nav{grid-template-columns:repeat(3,1fr);margin-top:15px}
+ nav{grid-template-columns:repeat(3,1fr);margin-top:15px;overflow:visible;min-height:0}
  .sidebottom{margin-top:15px}
  .main{padding:22px}
  .grid2,.productgrid{grid-template-columns:1fr}
@@ -127,7 +130,6 @@ button[title*="Eliminar"],button[title*="eliminar"]{border-color:#F7032166}
 .product-reference-image{width:100%;height:180px;object-fit:cover;border-radius:12px;margin-bottom:12px}
 .product-image-preview{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .product-image-preview img{width:180px;height:180px;object-fit:cover;border-radius:12px;border:1px solid rgba(252,170,5,.3)}
-
 .receipt-modal{position:fixed;inset:0;background:#07091ACC;z-index:30;overflow:auto;padding:24px;backdrop-filter:blur(5px)}
 .receipt-actions{max-width:760px;margin:0 auto 14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .receipt-actions a{display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--navy-2);color:var(--white);border-radius:10px;padding:10px 13px}
