@@ -1,3 +1,5 @@
+drop function if exists public.update_club(uuid,text,text,boolean);
+
 create or replace function private.current_club_id()
 returns uuid language sql stable security definer
 set search_path = ''
