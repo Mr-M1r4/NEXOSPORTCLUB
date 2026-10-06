@@ -151,3 +151,18 @@ button[title*="Eliminar"],button[title*="eliminar"]{border-color:#F7032166}
  .receipt-actions{display:none!important}
  .receipt{width:100%!important;box-shadow:none!important;border-radius:0!important;padding:24px!important}
 }
+
+
+.header-identity{display:flex;align-items:center;gap:14px;min-width:0}
+.club-logo-header{width:52px;height:52px;object-fit:contain;border-radius:12px;border:1px solid var(--line);background:#fff;padding:5px;box-shadow:0 8px 24px #0005}
+.club-logo-fallback{width:52px;height:52px;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;background:var(--navy-2);color:var(--gold);font-weight:800;letter-spacing:-.04em;flex:0 0 auto}
+.club-logo-settings{display:flex;align-items:center;gap:14px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#0C1028}
+.club-logo-settings img{width:110px;height:80px;object-fit:contain;border-radius:8px;background:#fff;padding:6px}
+.club-logo-settings>div{display:grid;gap:8px}
+.receipt-brand-main{display:flex;align-items:center;gap:14px;min-width:0}
+.receipt-logo{width:58px;height:58px;object-fit:contain;border-radius:8px;background:#fff}
+@media(max-width:680px){
+ .club-logo-header{width:44px;height:44px}
+ .club-logo-fallback{width:44px;height:44px}
+ .receipt-logo{width:48px;height:48px}
+}
