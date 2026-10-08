@@ -241,22 +241,30 @@ function Settings({data,load,role}:any){
   })()
  },[])
  const [logoBusy,setLogoBusy]=useState(false)
+ const [logoMsg,setLogoMsg]=useState({text:'',error:false})
  const uploadLogo=async(file:File|null)=>{
   if(!file)return
-  if(!['image/jpeg','image/png','image/webp'].includes(file.type))return alert('Solo se permiten imágenes JPG, PNG o WebP.')
-  if(file.size>2*1024*1024)return alert('El logo no puede superar 2 MB.')
-  if(!s.club_id)return alert('No se encontró el club activo.')
+  setLogoMsg({text:'',error:false})
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setLogoMsg({text:'Formato no válido. Selecciona JPG, PNG o WebP.',error:true});return}
+  if(file.size>2*1024*1024){setLogoMsg({text:'El logo no puede superar 2 MB.',error:true});return}
+  if(!s.club_id){setLogoMsg({text:'No se encontró el club activo. Recarga la página y vuelve a intentarlo.',error:true});return}
   setLogoBusy(true)
-  const path=s.club_id+'/logo'
-  const up=await supabase.storage.from('club-logos').upload(path,file,{contentType:file.type,upsert:true,cacheControl:'3600'})
-  if(up.error){setLogoBusy(false);return alert(up.error.message)}
-  const pub=supabase.storage.from('club-logos').getPublicUrl(path)
-  const logoUrl=pub.data.publicUrl+'?v='+Date.now()
-  const r=await supabase.from('club_settings').update({logo_path:path,logo_url:logoUrl,updated_at:new Date().toISOString()}).eq('club_id',s.club_id)
-  if(r.error){setLogoBusy(false);return alert(r.error.message)}
-  setF((x:any)=>({...x,logo_path:path,logo_url:logoUrl}))
-  setLogoBusy(false)
-  load()
+  try{
+   const path=s.club_id+'/logo'
+   const up=await supabase.storage.from('club-logos').upload(path,file,{contentType:file.type,upsert:true,cacheControl:'0'})
+   if(up.error)throw up.error
+   const pub=supabase.storage.from('club-logos').getPublicUrl(path)
+   const logoUrl=pub.data.publicUrl+'?v='+Date.now()
+   const r=await supabase.from('club_settings').update({logo_path:path,logo_url:logoUrl,updated_at:new Date().toISOString()}).eq('club_id',s.club_id).select('club_id').maybeSingle()
+   if(r.error)throw r.error
+   if(!r.data)throw new Error('La imagen se cargó, pero no se pudo asociar al club. Verifica que sigas en el club correcto y que tengas permisos de administrador.')
+   setF((x:any)=>({...x,logo_path:path,logo_url:logoUrl}))
+   setLogoMsg({text:'Logo actualizado correctamente.',error:false})
+   await load()
+  }catch(err:any){
+   const detail=String(err?.message||'Error desconocido')
+   setLogoMsg({text:'No se pudo subir el logo: '+detail,error:true})
+  }finally{setLogoBusy(false)}
  }
  const removeLogo=async()=>{
   if(!s.club_id||!f.logo_path)return
@@ -301,7 +309,7 @@ function Settings({data,load,role}:any){
   load()
  }
  const ownedClubs=(data.clubs||[]).filter((c:Row)=>ownedClubIds.includes(c.id))
- return <><section><div className="sectionhead"><div><h2>Identidad del club</h2><small>Nombre y logo visibles en la cabecera y en los comprobantes del club.</small></div><button onClick={saveIdentity}>Guardar identidad</button></div><div className="formgrid"><label>Nombre del club<input value={f.club_name} onChange={e=>setF({...f,club_name:e.target.value})}/></label><label>Logo del club<input type="file" accept="image/jpeg,image/png,image/webp" disabled={logoBusy} onChange={e=>uploadLogo(e.target.files?.[0]||null)}/></label>{f.logo_url&&<div className="club-logo-settings"><img src={f.logo_url} alt="Logo actual del club"/><div><span className="muted">Logo actual</span><button type="button" disabled={logoBusy} onClick={removeLogo}>Quitar logo</button></div></div>}<small className="muted">JPG, PNG o WebP · máximo 2 MB. El logo se almacena separado por club y solo owner/admin puede modificarlo.</small></div></section>
+ return <><section><div className="sectionhead"><div><h2>Identidad del club</h2><small>Nombre y logo visibles en la cabecera y en los comprobantes del club.</small></div><button onClick={saveIdentity}>Guardar identidad</button></div><div className="formgrid"><label>Nombre del club<input value={f.club_name} onChange={e=>setF({...f,club_name:e.target.value})}/></label><label>Logo del club<input type="file" accept="image/jpeg,image/png,image/webp" disabled={logoBusy} onChange={e=>{const file=e.target.files?.[0]||null;e.currentTarget.value="";void uploadLogo(file)}}/></label>{logoMsg.text&&<small className={logoMsg.error?"error":"muted"} role="status">{logoMsg.text}</small>}{logoBusy&&<small className="muted" role="status">Subiendo y guardando el logo…</small>}{f.logo_url&&<div className="club-logo-settings"><img src={f.logo_url} alt="Logo actual del club"/><div><span className="muted">Logo actual</span><button type="button" disabled={logoBusy} onClick={removeLogo}>Quitar logo</button></div></div>}<small className="muted">JPG, PNG o WebP · máximo 2 MB. El logo se almacena separado por club y solo owner/admin puede modificarlo.</small></div></section>
  <section><div className="sectionhead"><div><h2>Configuración general</h2><small>Moneda, localización, avisos y plantillas de comunicación.</small></div><button onClick={save}>Guardar cambios</button></div><div className="formgrid"><label>Moneda<input value={f.currency} onChange={e=>setF({...f,currency:e.target.value.toUpperCase()})}/></label><label>Localización<input value={f.locale} onChange={e=>setF({...f,locale:e.target.value})}/></label><label>Días de aviso de vencimiento<input type="number" min="0" max="30" value={f.reminder_days??''} onChange={e=>setF({...f,reminder_days:e.target.value})}/></label><label>Métodos de pago (separados por coma)<input value={f.payment_methods} onChange={e=>setF({...f,payment_methods:e.target.value})}/></label><label>Plantillas de comunicación (JSON)<textarea value={f.templates} onChange={e=>setF({...f,templates:e.target.value})}/></label></div></section>
  {role==='owner'&&<section><div className="sectionhead"><div><h2>Mis clubes</h2><small>Un owner puede archivar clubes que administra. El club activo debe cambiarse antes de eliminarlo.</small></div></div><Table head={['Club','Estado','Acción']} rows={ownedClubs.map((c:Row)=>[c.name,c.active?'Activo':'Inactivo',c.id===s.club_id?<span className="muted">Club activo · cambia de club para eliminarlo</span>:<button onClick={()=>deleteClub(c)}>Eliminar club</button>])}/></section>}
  <section><div className="sectionhead"><div><h2>Usuarios y roles</h2><small>Crear usuarios y asignar permisos del club.</small></div></div><div className="formgrid"><label>Nombre<input value={u.full_name} onChange={e=>setU({...u,full_name:e.target.value})}/></label><label>Correo<input type="email" value={u.email} onChange={e=>setU({...u,email:e.target.value})}/></label><label>Contraseña temporal (mín. 8 caracteres)<input type="password" value={u.password} onChange={e=>setU({...u,password:e.target.value})}/></label><Select label="Rol" value={u.role} set={(v:string)=>setU({...u,role:v})} options={[['staff','Staff'],['admin','Administrador'],['owner','Owner']]}/><button onClick={create}>Crear usuario</button>{umsg&&<div className="error">{umsg}</div>}</div><Table head={['Nombre','Correo','Rol','Último acceso']} rows={users.map((x:Row)=>[x.full_name||'—',x.email||'—',<select value={x.role} onChange={e=>changeRole(x.id,e.target.value)}><option value="staff">Staff</option><option value="admin">Admin</option><option value="owner">Owner</option></select>,x.last_sign_in_at?.slice(0,10)||'Nunca'])}/></section></>
