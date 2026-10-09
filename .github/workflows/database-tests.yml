@@ -1,15 +1,38 @@
-name: Database migration validation
+name: Database and application validation
 on:
   push:
-    branches: [main]
+    branches: [main, 'audit/**']
     paths:
+      - 'app/**'
+      - 'lib/**'
       - 'supabase/**'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/database-tests.yml'
   pull_request:
     paths:
+      - 'app/**'
+      - 'lib/**'
       - 'supabase/**'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/database-tests.yml'
 jobs:
+  application-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build Next.js application
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiJ9.placeholder
+        run: npm run build
   migration-validation:
     runs-on: ubuntu-latest
     steps:
@@ -19,13 +42,17 @@ jobs:
         run: |
           set -euo pipefail
           test -f supabase/tests/database/001_core_integrity.test.sql
+          test -f supabase/tests/database/002_delete_policy_regression.sql
           test -f supabase/migrations/20260923024843_complete_club_operations.sql
           test -f supabase/migrations/20260923123000_harden_role_resolution_and_sale.sql
           test -f supabase/migrations/20260923124000_grant_authenticated_role_resolution.sql
+          test -f supabase/migrations/20261008090000_restrict_historical_record_deletes.sql
           grep -q "create table if not exists public.inventory_movements" supabase/migrations/20260923024843_complete_club_operations.sql
           grep -q "create or replace function private.current_role" supabase/migrations/20260923123000_harden_role_resolution_and_sale.sql
           grep -q "create_sale" supabase/migrations/20260923123000_harden_role_resolution_and_sale.sql
           grep -q "grant execute on function private.current_role" supabase/migrations/20260923124000_grant_authenticated_role_resolution.sql
+          grep -q "as restrictive for delete" supabase/migrations/20261008090000_restrict_historical_record_deletes.sql
+          grep -q "audit_logs_no_delete" supabase/migrations/20261008090000_restrict_historical_record_deletes.sql
       - name: Validate migration numbering
         shell: bash
         run: |
